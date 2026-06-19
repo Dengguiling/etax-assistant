@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "电子税局助手",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "管理多家公司的电子税局账号，搜索公司后一键自动填充信用代码、用户名、密码到广东电子税局登录页。",
   "permissions": [
     "storage",
