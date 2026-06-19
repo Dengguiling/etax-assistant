@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "电子税局助手",
+  "version": "1.0.0",
+  "description": "管理多家公司的电子税局账号，搜索公司后一键自动填充信用代码、用户名、密码到广东电子税局登录页。",
+  "permissions": [
+    "storage",
+    "sidePanel",
+    "activeTab",
+    "scripting",
+    "tabs",
+    "webNavigation"
+  ],
+  "host_permissions": [
+    "*://*.guangdong.chinatax.gov.cn/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "side_panel": {
+    "default_path": "sidepanel/sidepanel.html"
+  },
+  "action": {
+    "default_title": "电子税局助手"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.guangdong.chinatax.gov.cn/*"
+      ],
+      "js": [
+        "content/matcher.js",
+        "content/content.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

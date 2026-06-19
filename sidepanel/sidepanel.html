@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>电子税局助手</title>
+  <link rel="stylesheet" href="sidepanel.css" />
+</head>
+<body>
+  <header class="hd">
+    <div class="hd-logo">
+      <img src="../icons/icon48.png" alt="" width="24" height="24" />
+      <span>电子税局助手</span>
+    </div>
+    <button id="btn-settings" class="icon-btn" title="设置 / 字段配置">⚙</button>
+  </header>
+
+  <!-- 导入区 -->
+  <section class="card import-card">
+    <label class="file-label">
+      <input type="file" id="file-input" accept=".xlsx,.xls,.csv" hidden />
+      <span class="file-btn">📄 导入 Excel 账号表</span>
+    </label>
+    <div id="import-hint" class="hint">支持 .xlsx / .xls / .csv，四列：公司名称、信用代码、用户名、密码</div>
+    <div id="import-result" class="result-line"></div>
+    <!-- 列头映射（自动识别后可手动纠正） -->
+    <div id="mapper" class="mapper hidden">
+      <div class="mapper-title">识别到的列，请确认对应关系：</div>
+      <div class="mapper-grid">
+        <label>公司名称 <select data-field="company"></select></label>
+        <label>信用代码 <select data-field="creditCode"></select></label>
+        <label>用户名 <select data-field="username"></select></label>
+        <label>密码 <select data-field="password"></select></label>
+      </div>
+      <div class="mapper-actions">
+        <button id="mapper-confirm" class="primary">确认导入</button>
+        <button id="mapper-cancel" class="ghost">取消</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 搜索区 -->
+  <section class="card search-card">
+    <input type="text" id="search" placeholder="输入公司名 / 信用代码 / 用户名，回车填充" autocomplete="off" />
+    <div class="search-meta">
+      <span id="count">共 0 家</span>
+      <button id="btn-clear" class="link-btn hidden">清空全部</button>
+    </div>
+    <ul id="list" class="list" tabindex="-1"></ul>
+  </section>
+
+  <!-- 状态 / 诊断信息 -->
+  <div id="toast" class="toast hidden"></div>
+  <div id="diag" class="diag hidden">
+    <div class="diag-title">⚠ 以下字段未自动填充，请在设置里填写 CSS selector：</div>
+    <pre id="diag-body"></pre>
+  </div>
+
+  <!-- 设置面板 -->
+  <section id="settings-panel" class="settings hidden">
+    <div class="settings-title">字段 CSS selector（留空则用智能匹配）</div>
+    <p class="settings-tip">示例：<code>input[name='loginname']</code> 或 <code>#creditCode</code>。税局页面改版导致自动匹配失败时使用。</p>
+    <label>信用代码 <input type="text" id="sel-creditCode" placeholder="留空=智能匹配" /></label>
+    <label>用户名 <input type="text" id="sel-username" placeholder="留空=智能匹配" /></label>
+    <label>密码 <input type="text" id="sel-password" placeholder="留空=智能匹配" /></label>
+    <div class="settings-actions">
+      <button id="sel-save" class="primary">保存</button>
+      <button id="sel-close" class="ghost">关闭</button>
+    </div>
+  </section>
+
+  <script src="../lib/xlsx.full.min.js"></script>
+  <script src="crypto.js"></script>
+  <script src="sidepanel.js"></script>
+</body>
+</html>
