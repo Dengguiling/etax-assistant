@@ -93,10 +93,69 @@ etax-assistant/
 ├── content/
 │   ├── matcher.js         智能字段匹配（评分）
 │   └── content.js         接收 FILL 消息并执行填充
-├── lib/xlsx.full.min.js   SheetJS（Excel 解析）
+├── lib/
+│   ├── xlsx.full.min.js   SheetJS（Excel 解析）
+│   └── updater.js         自更新检测模块
+├── scripts/release.sh     打包发版脚本
 ├── icons/                 16/48/128 图标
 ├── sample/账号示例.xlsx   测试数据（3 条虚构账号）
 └── README.md
+```
+
+## 版本更新与分发（面向会计等非技术用户）
+
+由于无法上架 Chrome 商店，本插件采用「**插件自更新检测 + 一键下载引导**」机制：会计装一次后，有新版本会自动提示，照提示点几下即可更新，**账号数据不丢**。
+
+### 工作原理
+
+1. 插件后台**每天**（service worker 唤醒时）从 GitHub Release 拉取 `update.json` 比对版本。
+2. 发现新版 → 扩展图标显示 `NEW` 角标 + 桌面通知。
+3. 打开侧边栏顶部红色横幅 → 「一键下载更新包」→ 自动弹出图文安装步骤。
+4. 账号数据存在 `chrome.storage.local`，重装不丢。
+
+> ⚠️ Chrome 安全机制不允许第三方扩展静默替换自身，所以最后一步（重载扩展）必须用户点一下，这是所有非商店扩展的共同限制。
+
+### 发版流程（开发者）
+
+```bash
+# 1. 打包并生成 update.json
+./scripts/release.sh 1.0.1 "修复登录页改版匹配，新增……"
+
+# 2. 提交并打 tag
+git add -A
+git commit -m "release: v1.0.1"
+git tag v1.0.1
+git push origin main --tags
+
+# 3. 创建 GitHub Release（自动上传 zip + update.json）
+gh release create v1.0.1 \
+  --title "v1.0.1" \
+  --notes "修复登录页改版匹配" \
+  dist/etax-assistant-v1.0.1.zip dist/update.json
+```
+
+`update.json` 形如（插件 fetch 这个文件判断有无新版）：
+```json
+{
+  "latest": "1.0.1",
+  "url": "https://github.com/Dengguiling/etax-assistant/releases/latest/download/etax-assistant-v1.0.1.zip",
+  "note": "修复登录页改版匹配",
+  "publishedAt": "2026-06-19T12:00:00Z"
+}
+```
+
+### 首次安装分发给会计
+
+把首个版本的 zip 下载链接发给会计，附一句话说明：
+> 下载后解压 → Chrome 地址栏输入 `chrome://extensions` → 开启右上角「开发者模式」→「加载已解压的扩展程序」→ 选解压出来的 `etax-assistant` 文件夹。
+
+之后每次更新，会计只需在侧边栏点「一键下载更新包」并按弹出的图文步骤操作，无需再找你。
+
+### 如果国内访问 GitHub 检测慢
+
+`lib/updater.js` 顶部 `UPDATE_JSON_URL` 改一行即可切换到 Gitee 镜像或自建地址：
+```js
+const UPDATE_JSON_URL = 'https://gitee.com/你的用户名/etax-assistant/releases/latest/download/update.json';
 ```
 
 ## 数据与隐私

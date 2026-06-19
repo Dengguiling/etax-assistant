@@ -364,5 +364,99 @@ function escapeAttr(s) {
   return String(s == null ? '' : s).replace(/["']/g, '');
 }
 
+// ---------- 更新检查 ----------
+const upEls = {
+  banner: $('#update-banner'),
+  version: $('#ub-version'),
+  note: $('#ub-note'),
+  download: $('#ub-download'),
+  close: $('#ub-close'),
+  guide: $('#ub-guide'),
+  guideModal: $('#guide-modal'),
+  guideClose: $('#guide-close'),
+  guideExtUrl: $('#guide-ext-url'),
+  verTag: $('#ver-tag'),
+};
+let currentUpdateInfo = null;
+
+// 显示版本号
+upEls.verTag.textContent = 'v' + chrome.runtime.getManifest().version;
+
+// 渲染横幅
+function renderUpdateBanner(info) {
+  currentUpdateInfo = info;
+  if (info && info.latest) {
+    upEls.version.textContent = 'v' + info.latest;
+    upEls.note.textContent = info.note || '';
+    upEls.banner.classList.remove('hidden');
+  } else {
+    upEls.banner.classList.add('hidden');
+  }
+}
+
+// 打开侧边栏时：先用缓存快速展示，再后台静默检查一次
+async function initUpdate() {
+  const cached = await send({ type: 'GET_UPDATE_INFO' });
+  if (cached && cached.hasUpdate && cached.info) {
+    renderUpdateBanner(cached.info);
+  }
+  // 静默检查（不强制、不忽略 skip）
+  const r = await send({ type: 'CHECK_UPDATE' });
+  if (r && r.ok) {
+    if (r.hasUpdate && r.info) renderUpdateBanner(r.info);
+    else if (r.reason === 'up-to-date') renderUpdateBanner(null);
+  }
+}
+
+// 一键下载更新包
+upEls.download.addEventListener('click', async () => {
+  if (!currentUpdateInfo || !currentUpdateInfo.url) {
+    toast('暂无下载地址', 'err');
+    return;
+  }
+  upEls.download.disabled = true;
+  upEls.download.textContent = '正在下载…';
+  const res = await send({
+    type: 'DOWNLOAD_UPDATE',
+    url: currentUpdateInfo.url,
+    filename: `etax-assistant-v${currentUpdateInfo.latest}.zip`,
+    saveAs: true, // 弹保存框，让会计能看到下载到哪
+  });
+  upEls.download.disabled = false;
+  upEls.download.textContent = '⬇ 一键下载更新包';
+  if (res && res.ok) {
+    toast('已开始下载，请看浏览器下载提示', 'ok');
+    upEls.guideModal.classList.remove('hidden'); // 自动弹出安装引导
+  } else {
+    toast('下载失败：' + (res && res.error || '未知错误') + '，请稍后重试或联系提供者', 'err');
+  }
+});
+
+// 忽略本次（记到 skip，不再弹这个版本）
+upEls.close.addEventListener('click', async () => {
+  if (currentUpdateInfo && currentUpdateInfo.latest) {
+    await send({ type: 'SKIP_VERSION', version: currentUpdateInfo.latest });
+  }
+  renderUpdateBanner(null);
+  toast('已忽略该版本', '');
+});
+
+// 安装引导
+upEls.guide.addEventListener('click', () => upEls.guideModal.classList.remove('hidden'));
+upEls.guideClose.addEventListener('click', () => upEls.guideModal.classList.add('hidden'));
+// 点击弹层背景关闭
+upEls.guideModal.addEventListener('click', (e) => {
+  if (e.target === upEls.guideModal) upEls.guideModal.classList.add('hidden');
+});
+// chrome:// 链接在普通页面打不开，引导用户复制
+upEls.guideExtUrl.addEventListener('click', (e) => {
+  e.preventDefault();
+  // 尝试用 tabs.create 打开（可能被拦截），失败则提示复制
+  chrome.tabs.create({ url: 'chrome://extensions/' }).catch(() => {
+    prompt('Chrome 限制了自动打开该页面，请复制下面地址到地址栏回车：', 'chrome://extensions/');
+  });
+});
+
 // ---------- 初始化 ----------
 refreshList();
+initUpdate();

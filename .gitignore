@@ -10,5 +10,8 @@ Thumbs.db
 # 依赖（如未来引入构建工具）
 node_modules/
 
+# 发版产物（release.sh 生成，不入库）
+dist/
+
 # 第三方库（xlsx 由 README 说明来源，按需保留；如不入库可取消下一行注释）
 # lib/xlsx.full.min.js

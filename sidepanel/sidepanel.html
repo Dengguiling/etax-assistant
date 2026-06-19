@@ -11,9 +11,42 @@
     <div class="hd-logo">
       <img src="../icons/icon48.png" alt="" width="24" height="24" />
       <span>电子税局助手</span>
+      <span id="ver-tag" class="ver-tag">v?</span>
     </div>
     <button id="btn-settings" class="icon-btn" title="设置 / 字段配置">⚙</button>
   </header>
+
+  <!-- 更新横幅：检测到新版本时显示 -->
+  <div id="update-banner" class="update-banner hidden">
+    <div class="ub-top">
+      <span class="ub-title">🆕 发现新版本 <span id="ub-version">v?</span></span>
+      <button id="ub-close" class="ub-close" title="本次忽略">✕</button>
+    </div>
+    <div id="ub-note" class="ub-note"></div>
+    <div class="ub-actions">
+      <button id="ub-download" class="ub-btn">⬇ 一键下载更新包</button>
+      <button id="ub-guide" class="ub-link">怎么安装？</button>
+    </div>
+  </div>
+
+  <!-- 安装引导弹层 -->
+  <div id="guide-modal" class="guide-modal hidden">
+    <div class="guide-box">
+      <div class="guide-head">
+        <span>更新安装步骤（照着点，约 1 分钟）</span>
+        <button id="guide-close" class="ub-close">✕</button>
+      </div>
+      <ol class="guide-steps">
+        <li><b>① 解压下载的压缩包</b><br>找到刚才下载的 <code>etax-assistant-update.zip</code>，双击 → 选「全部解压缩 / 解压到当前文件夹」（Mac 双击即可）。</li>
+        <li><b>② 打开扩展管理页</b><br>点击 <a id="guide-ext-url" href="#">chrome://extensions</a>（若打不开，复制地址到浏览器地址栏回车）。</li>
+        <li><b>③ 开启右上角「开发者模式」</b>开关。</li>
+        <li><b>④ 先移除旧版</b>：找到「电子税局助手」→ 点「移除」。<br>（不移除也行，但建议移除以免混淆）</li>
+        <li><b>⑤ 加载新版</b>：点「加载已解压的扩展程序」→ 选刚才解压出来的 <code>etax-assistant</code> 文件夹（里面要有 manifest.json 的那个）。</li>
+        <li><b>⑥ 完成</b>✅ 账号数据不会丢（存在浏览器里）。重新打开侧边栏即可。</li>
+      </ol>
+      <div class="guide-tip">💡 提示：如果第⑤步报错，多半是选错了文件夹——请选包含 <code>manifest.json</code> 文件的那一层。</div>
+    </div>
+  </div>
 
   <!-- 导入区 -->
   <section class="card import-card">
