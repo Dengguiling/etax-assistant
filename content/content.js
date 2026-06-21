@@ -87,6 +87,31 @@
     return hasPwd || hasText;
   }
 
+  // ---------- 粘贴自动填充 ----------
+  // 从 Excel 复制「信用代码 用户名 密码」三段（选中 3 个单元格复制即为此格式：
+  // 横排一排或竖排一列，剪贴板里都是空白分隔的 3 段），
+  // 在登录页任意位置按 Ctrl+V，自动解析并填入对应登录框。
+  // 复用上面的 fillHere() —— 走现有 matcher + setNativeValue，比硬编码选择器更稳。
+  document.addEventListener('paste', (event) => {
+    const data = (event.clipboardData && event.clipboardData.getData('text')) || '';
+    // trim 后按空白分割；恰好 3 段才处理，否则放行让浏览器正常粘贴
+    const parts = data.trim().split(/\s+/);
+    if (parts.length !== 3) return;
+
+    const account = { creditCode: parts[0], username: parts[1], password: parts[2] };
+    let r;
+    try {
+      r = fillHere(account, {}); // selectors 留空，全部交给智能匹配
+    } catch (e) { return; } // 填充异常不影响默认粘贴
+
+    // 成功填到至少一个字段才拦截默认粘贴，
+    // 避免把整段「代码 账号 密码」文本原样塞进当前聚焦的输入框。
+    // 没填到（如非登录表单）则放行，用户可正常粘贴其它内容。
+    if (r && r.filled && r.filled.length > 0) {
+      event.preventDefault();
+    }
+  });
+
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (!msg) return;
     if (msg.type === 'PING') { sendResponse({ ok: true, frameId: sender.frameId }); return false; }
